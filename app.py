@@ -26,7 +26,7 @@ st.sidebar.header("Einstellungen")
 
 ticker = st.sidebar.text_input("Wähle den Ticker").strip().upper()
 
-if not ticker:
+if ValueError:
     st.warning("Bitte gib ein Ticker-Kürzel ein.")
     st.stop()
 
