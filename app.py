@@ -88,7 +88,7 @@ with tab1:
     st.write(f"**Anzahl der Datenpunkte:** {len(df)}")
 
     st.write("- Kennzahlen")
-    st.write(df.describe().loc[["mean", "std"]])
+    st.write(df.describe().loc[["mean", "std"], ["Open", "High", "Low", "Close", "Volume", "Dividends"]])
     st.write("- Performance-Berechnungen")
     st.write("- Renditen")
     st.write("- Volatilität")
