@@ -25,7 +25,10 @@ st.write("Analysiere Aktienkurse und Unternehmensdaten in einem einfachen Dashbo
 # --------------------------------------------------
 st.sidebar.header("Einstellungen")
 
-ticker = st.sidebar.text_input("Aktienkürzel")
+ticker = st.sidebar.selectbox(
+    "Wähle einen Ticker",
+    ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA"]
+)
 
 period = st.sidebar.selectbox(
     "Wähle einen Zeitraum",
@@ -38,11 +41,8 @@ period = st.sidebar.selectbox(
 # --------------------------------------------------
 @st.cache_data
 def load_stock_data(ticker_symbol, selected_period):
-    df = yf.download(
-        ticker_symbol,
-        period=selected_period,
-        multi_level_index=False
-    )
+    stock = yf.Ticker(ticker_symbol)
+    df = stock.history(period=selected_period)
     return df
 
 
@@ -64,16 +64,26 @@ if "Close" not in df.columns:
 # --------------------------------------------------
 # Close-Spalte sicher als Series behandeln
 # --------------------------------------------------
-close_series = df["Close"]
-
-if isinstance(close_series, pd.DataFrame):
-    close_series = close_series.iloc[:, 0]
-
-close_series = pd.to_numeric(close_series, errors="coerce").dropna()
+close_series = pd.to_numeric(df["Close"], errors="coerce").dropna()
 
 if close_series.empty:
     st.error("Keine gültigen Schlusskurse gefunden.")
     st.stop()
+
+
+# --------------------------------------------------
+# Kennzahlen vorbereiten
+# --------------------------------------------------
+current_price = float(close_series.iloc[-1])
+max_price = float(close_series.max())
+min_price = float(close_series.min())
+avg_price = float(close_series.mean())
+
+if len(close_series) > 1:
+    pct_change = ((close_series.iloc[-1] - close_series.iloc[0]) / close_series.iloc[0]) * 100
+    pct_change = float(pct_change)
+else:
+    pct_change = 0.0
 
 
 # --------------------------------------------------
@@ -87,17 +97,6 @@ tab1, tab2, tab3 = st.tabs(["Überblick", "Kursdaten", "Unternehmensinfos"])
 # --------------------------------------------------
 with tab1:
     st.subheader("Kennzahlen")
-
-    current_price = float(close_series.iloc[-1])
-    max_price = float(close_series.max())
-    min_price = float(close_series.min())
-    avg_price = float(close_series.mean())
-
-    if len(close_series) > 1:
-        pct_change = ((close_series.iloc[-1] - close_series.iloc[0]) / close_series.iloc[0]) * 100
-        pct_change = float(pct_change)
-    else:
-        pct_change = 0.0
 
     col1, col2, col3, col4 = st.columns(4)
 
@@ -147,18 +146,23 @@ with tab2:
 with tab3:
     st.subheader("Unternehmensinformationen")
 
-    st.write("Hier kannst du später weitere Informationen ergänzen, zum Beispiel:")
-    st.write("- Firmenname")
-    st.write("- Branche")
-    st.write("- Marktkapitalisierung")
-    st.write("- KGV")
-    st.write("- Umsatz / Gewinn")
-    st.write("- Geschäftsmodell / Kurzbeschreibung")
+    try:
+        info = yf.Ticker(ticker).info
 
-    # Platzhalter:
-    # company = yf.Ticker(ticker)
-    # info = company.info
-    # Danach einzelne Kennzahlen aus info ziehen und anzeigen.
+        company_name = info.get("longName", "Nicht verfügbar")
+        sector = info.get("sector", "Nicht verfügbar")
+        industry = info.get("industry", "Nicht verfügbar")
+        market_cap = info.get("marketCap", "Nicht verfügbar")
+        trailing_pe = info.get("trailingPE", "Nicht verfügbar")
+
+        st.write(f"**Name:** {company_name}")
+        st.write(f"**Sektor:** {sector}")
+        st.write(f"**Branche:** {industry}")
+        st.write(f"**Marktkapitalisierung:** {market_cap}")
+        st.write(f"**KGV (trailing):** {trailing_pe}")
+
+    except Exception:
+        st.warning("Unternehmensinformationen konnten momentan nicht geladen werden.")
 
 
 # --------------------------------------------------
@@ -168,5 +172,5 @@ st.markdown("---")
 st.write("Nächste sinnvolle Erweiterungen:")
 st.write("1. Zweiten Ticker zum Vergleich hinzufügen")
 st.write("2. Volumen als weiteren Plot einbauen")
-st.write("3. Unternehmenskennzahlen aus yfinance ergänzen")
+st.write("3. Unternehmenskennzahlen schöner formatieren")
 st.write("4. Zeitraum flexibler machen")
