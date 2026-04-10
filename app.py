@@ -1,7 +1,6 @@
 import streamlit as st
 import yfinance as yf
 import pandas as pd
-import matplotlib.pyplot as plt
 
 
 # --------------------------------------------------
@@ -17,7 +16,7 @@ st.set_page_config(
 # Titel / Einleitung
 # --------------------------------------------------
 st.title("Stock Dashboard")
-st.write("Analysiere Aktienkurse und Unternehmensdaten in einem einfachen Dashboard.")
+st.write("Gib ein Ticker-Kürzel ein und lade die zugehörigen Unternehmens- und Kursdaten.")
 
 
 # --------------------------------------------------
@@ -25,14 +24,15 @@ st.write("Analysiere Aktienkurse und Unternehmensdaten in einem einfachen Dashbo
 # --------------------------------------------------
 st.sidebar.header("Einstellungen")
 
-ticker = st.sidebar.selectbox(
-    "Wähle einen Ticker",
-    ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA"]
-)
+ticker = st.sidebar.text_input(
+    "Wähle den Ticker",
+    value="AAPL"
+).upper()
 
 period = st.sidebar.selectbox(
     "Wähle einen Zeitraum",
-    ["1mo", "6mo", "1y", "5y"]
+    ["1mo", "6mo", "1y", "5y"],
+    index=2
 )
 
 
@@ -46,6 +46,13 @@ def load_stock_data(ticker_symbol, selected_period):
     return df
 
 
+# --------------------------------------------------
+# Nur laden, wenn ein Ticker eingegeben wurde
+# --------------------------------------------------
+if not ticker.strip():
+    st.warning("Bitte gib ein Ticker-Kürzel ein.")
+    st.stop()
+
 df = load_stock_data(ticker, period)
 
 
@@ -53,37 +60,8 @@ df = load_stock_data(ticker, period)
 # Daten prüfen
 # --------------------------------------------------
 if df.empty:
-    st.error("Keine Daten gefunden. Bitte versuche einen anderen Ticker oder Zeitraum.")
+    st.error("Keine Daten gefunden. Prüfe das Ticker-Kürzel oder wähle einen anderen Zeitraum.")
     st.stop()
-
-if "Close" not in df.columns:
-    st.error("Die Close-Spalte wurde nicht gefunden.")
-    st.stop()
-
-
-# --------------------------------------------------
-# Close-Spalte sicher als Series behandeln
-# --------------------------------------------------
-close_series = pd.to_numeric(df["Close"], errors="coerce").dropna()
-
-if close_series.empty:
-    st.error("Keine gültigen Schlusskurse gefunden.")
-    st.stop()
-
-
-# --------------------------------------------------
-# Kennzahlen vorbereiten
-# --------------------------------------------------
-current_price = float(close_series.iloc[-1])
-max_price = float(close_series.max())
-min_price = float(close_series.min())
-avg_price = float(close_series.mean())
-
-if len(close_series) > 1:
-    pct_change = ((close_series.iloc[-1] - close_series.iloc[0]) / close_series.iloc[0]) * 100
-    pct_change = float(pct_change)
-else:
-    pct_change = 0.0
 
 
 # --------------------------------------------------
@@ -96,37 +74,18 @@ tab1, tab2, tab3 = st.tabs(["Überblick", "Kursdaten", "Unternehmensinfos"])
 # Tab 1: Überblick
 # --------------------------------------------------
 with tab1:
-    st.subheader("Kennzahlen")
+    st.subheader("Allgemeiner Überblick")
 
-    col1, col2, col3, col4 = st.columns(4)
+    st.write(f"**Ausgewählter Ticker:** {ticker}")
+    st.write(f"**Gewählter Zeitraum:** {period}")
+    st.write(f"**Anzahl der Datenpunkte:** {len(df)}")
 
-    col1.metric("Aktueller Kurs", f"{current_price:.2f}")
-    col2.metric("Hoch", f"{max_price:.2f}")
-    col3.metric("Tief", f"{min_price:.2f}")
-    col4.metric("Durchschnitt", f"{avg_price:.2f}")
-
-    st.metric("Veränderung im Zeitraum", f"{pct_change:.2f}%")
-
-    st.subheader("Kursverlauf")
-
-    fig, ax = plt.subplots()
-    ax.plot(close_series.index, close_series)
-    ax.set_title(f"{ticker} - Schlusskurs")
-    ax.set_xlabel("Datum")
-    ax.set_ylabel("Preis")
-    st.pyplot(fig)
-
-    st.subheader("Kurzinterpretation")
-
-    if len(close_series) > 1:
-        if pct_change > 0:
-            st.write("Die Aktie ist im gewählten Zeitraum insgesamt gestiegen.")
-        elif pct_change < 0:
-            st.write("Die Aktie ist im gewählten Zeitraum insgesamt gefallen.")
-        else:
-            st.write("Die Aktie hat sich im gewählten Zeitraum kaum verändert.")
-    else:
-        st.write("Für den gewählten Zeitraum sind zu wenige Daten für eine Interpretation vorhanden.")
+    st.write("Hier kannst du später selbst ergänzen:")
+    st.write("- Kennzahlen")
+    st.write("- Performance-Berechnungen")
+    st.write("- Renditen")
+    st.write("- Volatilität")
+    st.write("- eigene Interpretation")
 
 
 # --------------------------------------------------
@@ -139,6 +98,12 @@ with tab2:
     st.subheader("Letzte Beobachtungen")
     st.dataframe(df.tail())
 
+    st.write("Hier kannst du später selbst ergänzen:")
+    st.write("- eigene Filter")
+    st.write("- bereinigte Daten")
+    st.write("- zusätzliche Spalten")
+    st.write("- eigene Charts")
+
 
 # --------------------------------------------------
 # Tab 3: Unternehmensinfos
@@ -149,28 +114,18 @@ with tab3:
     try:
         info = yf.Ticker(ticker).info
 
-        company_name = info.get("longName", "Nicht verfügbar")
-        sector = info.get("sector", "Nicht verfügbar")
-        industry = info.get("industry", "Nicht verfügbar")
-        market_cap = info.get("marketCap", "Nicht verfügbar")
-        trailing_pe = info.get("trailingPE", "Nicht verfügbar")
-
-        st.write(f"**Name:** {company_name}")
-        st.write(f"**Sektor:** {sector}")
-        st.write(f"**Branche:** {industry}")
-        st.write(f"**Marktkapitalisierung:** {market_cap}")
-        st.write(f"**KGV (trailing):** {trailing_pe}")
+        st.write(f"**Name:** {info.get('longName', 'Nicht verfügbar')}")
+        st.write(f"**Sektor:** {info.get('sector', 'Nicht verfügbar')}")
+        st.write(f"**Branche:** {info.get('industry', 'Nicht verfügbar')}")
+        st.write(f"**Land:** {info.get('country', 'Nicht verfügbar')}")
+        st.write(f"**Währung:** {info.get('currency', 'Nicht verfügbar')}")
 
     except Exception:
         st.warning("Unternehmensinformationen konnten momentan nicht geladen werden.")
 
 
 # --------------------------------------------------
-# Footer / Nächste Schritte
+# Footer
 # --------------------------------------------------
 st.markdown("---")
-st.write("Nächste sinnvolle Erweiterungen:")
-st.write("1. Zweiten Ticker zum Vergleich hinzufügen")
-st.write("2. Volumen als weiteren Plot einbauen")
-st.write("3. Unternehmenskennzahlen schöner formatieren")
-st.write("4. Zeitraum flexibler machen")
+st.write("Dieses Gerüst ist bewusst einfach gehalten, damit du Analytics und Visualisierungen selbst ergänzen kannst.")
