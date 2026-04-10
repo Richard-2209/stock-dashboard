@@ -87,11 +87,21 @@ with tab1:
     st.write(f"**Gewählter Zeitraum:** {period}")
     st.write(f"**Anzahl der Datenpunkte:** {len(df)}")
 
+    # Kennzahlen
     st.write("- Kennzahlen")
+
     stats = df.describe().loc[["mean", "std"], ["Open", "High", "Low", "Close", "Volume", "Dividends"]]
     stats.index = ["Mean", "Standard Deviation"]
     st.write(stats)
+
+    # Performance Indicators
     st.write("- Performance-Berechnungen")
+
+    st.write("Absolute Veränderung")
+    abs_diff = df["Close"].iloc[-1] - df["Close"].iloc[0]
+    st.write(abs_diff)
+
+
     st.write("- Renditen")
     st.write("- Volatilität")
     st.write("- eigene Interpretation")
