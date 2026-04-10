@@ -43,8 +43,12 @@ period = st.sidebar.selectbox(
 @st.cache_data
 def load_stock_data(ticker_symbol, period):
     stock = yf.Ticker(ticker_symbol)
-    df = stock.history(period=period)
-    return df
+    try:
+        df = stock.history(period=period)
+        return df
+    except Exception:
+        st.error("Beim Laden der Daten ist ein Fehler aufgetreten.")
+        st.stop()
 
 
 # --------------------------------------------------
