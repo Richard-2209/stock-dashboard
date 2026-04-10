@@ -48,6 +48,7 @@ def load_stock_data(ticker_symbol, period):
         return df
     except Exception:
         st.error("Beim Laden der Daten ist ein Fehler aufgetreten.")
+        print("LEL")
         st.stop()
 
 
