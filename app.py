@@ -41,9 +41,9 @@ period = st.sidebar.selectbox(
 # Daten laden
 # --------------------------------------------------
 @st.cache_data
-def load_stock_data(ticker_symbol, selected_period):
+def load_stock_data(ticker_symbol, period):
     stock = yf.Ticker(ticker_symbol)
-    df = stock.history(period=selected_period)
+    df = stock.history(period=period)
     return df
 
 
