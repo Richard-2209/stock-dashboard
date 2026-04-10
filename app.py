@@ -90,7 +90,7 @@ with tab1:
     # Kennzahlen
     st.write("- Kennzahlen")
 
-    stats = df.describe().loc[["mean", "std"], ["Open", "High", "Low", "Close", "Volume", "Dividends"]]
+    stats = df.describe().loc[["mean", "std"], ["Open", "High", "Low", "Close", "Volume", "Dividends"]].round(2)
     stats.index = ["Mean", "Standard Deviation"]
     st.write(stats)
 
@@ -99,7 +99,7 @@ with tab1:
 
     st.write("Absolute Veränderung")
     abs_diff = df["Close"].iloc[-1] - df["Close"].iloc[0]
-    st.write(abs_diff)
+    st.write(abs_diff.round(2))
 
 
     st.write("- Renditen")
