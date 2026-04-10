@@ -1,6 +1,7 @@
 import streamlit as st
 import yfinance as yf
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 # --------------------------------------------------
@@ -86,8 +87,8 @@ with tab1:
     st.write(f"**Gewählter Zeitraum:** {period}")
     st.write(f"**Anzahl der Datenpunkte:** {len(df)}")
 
-    st.write("Hier kannst du später selbst ergänzen:")
     st.write("- Kennzahlen")
+    st.write(df.describe())
     st.write("- Performance-Berechnungen")
     st.write("- Renditen")
     st.write("- Volatilität")
