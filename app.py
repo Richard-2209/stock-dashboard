@@ -26,7 +26,7 @@ st.sidebar.header("Einstellungen")
 
 ticker = st.sidebar.text_input(
     "Wähle den Ticker",
-    value="AAPL"
+    value=input()
 ).upper()
 
 period = st.sidebar.selectbox(
