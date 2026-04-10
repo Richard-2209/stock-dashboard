@@ -25,8 +25,7 @@ st.write("Analysiere Aktienkurse und Unternehmensdaten in einem einfachen Dashbo
 # --------------------------------------------------
 st.sidebar.header("Einstellungen")
 
-ticker = st.text_input("Gib einen Ticker ein")
-st.write("Eingabe:", ticker)
+ticker = st.sidebar.text_input("Ticker")
 
 period = st.sidebar.selectbox(
     "Wähle einen Zeitraum",
