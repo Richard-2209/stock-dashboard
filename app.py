@@ -89,7 +89,7 @@ with tab1:
 
     st.write("- Kennzahlen")
     stats = df.describe().loc[["mean", "std"], ["Open", "High", "Low", "Close", "Volume", "Dividends"]]
-    stats.index = ["Durchschnitt", "Standardabweichung"]
+    stats.index = ["Mean", "Standard Deviation"]
     st.write(stats)
     st.write("- Performance-Berechnungen")
     st.write("- Renditen")
